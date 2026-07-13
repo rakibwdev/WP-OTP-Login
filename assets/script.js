@@ -49,8 +49,11 @@ else {
     $('#send_otp').click(function(){
 
         $.post(wpotp_data.ajax_url, {
+            // action: 'send_otp_sms',
+            // phone: $('#phone').val()
             action: 'send_otp_sms',
-            phone: $('#phone').val()
+            phone: phone,
+            nonce: wpotp_data.nonce
         }, function(){
             $('#otp_area').show();
         });
@@ -73,3 +76,5 @@ else {
 }
 
 });
+
+

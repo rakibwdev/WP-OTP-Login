@@ -3,7 +3,7 @@
 Plugin Name: WP OTP Login
 Description: Login with phone number using OTP (SMS API + Firebase support)
 Version: 1.0
-Author: Your Name
+Author: Rakib Dev Studio
 */
 
 if (!defined('ABSPATH')) exit;
@@ -27,7 +27,10 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_script('firebase-auth', 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js', [], null, true);
 
     wp_localize_script('wpotp-script', 'wpotp_data', [
+        // 'ajax_url' => admin_url('admin-ajax.php'),
+        // 'provider' => get_option('wpotp_provider'),
         'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('wpotp_nonce'),
         'provider' => get_option('wpotp_provider'),
 
         'firebase' => [
@@ -60,7 +63,7 @@ function wpotp_settings_page() {
 </select>
 
 <h3>SMS API</h3>
-<input type="text" name="wpotp_sms_url" placeholder="API URL" value="<?php echo get_option('wpotp_sms_url'); ?>"><br><br>
+<input type="text" name="wpotp_sms_url" placeholder="API URL" value="<?php echo esc_attr(get_option('wpotp_sms_url')); ?>"><br><br>
 <input type="text" name="wpotp_sms_key" placeholder="API KEY" value="<?php echo get_option('wpotp_sms_key'); ?>"><br><br>
 
 <h3>Firebase Config</h3>
