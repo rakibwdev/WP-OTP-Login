@@ -1,0 +1,19 @@
+.wpotp-box {
+    max-width: 300px;
+    margin: auto;
+    text-align: center;
+}
+
+.wpotp-box input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.wpotp-box button {
+    width: 100%;
+    padding: 10px;
+    background: #0073aa;
+    color: white;
+    border: none;
+}
