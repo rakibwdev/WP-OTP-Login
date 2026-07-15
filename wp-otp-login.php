@@ -24,9 +24,9 @@ add_action('wp_enqueue_scripts', function () {
 
     wp_localize_script('wpotp-script', 'wpotp_data', [
         'ajax_url' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('wpotp_nonce'),
-        'method' => get_option('wpotp_method', 'email'),
-        'btn_color' => get_option('wpotp_btn_color', '#0073aa')
+        'nonce'    => wp_create_nonce('wpotp_nonce'),
+        'method'   => get_option('wpotp_method', 'email'),
+        'btn_color'=> get_option('wpotp_btn_color', '#0073aa')
     ]);
 });
 
@@ -46,8 +46,9 @@ function wpotp_settings_page() {
 
 <h3>Login Method</h3>
 <select name="wpotp_method">
-<option value="email" <?php selected(get_option('wpotp_method'), 'email'); ?>>Email OTP (Default)</option>
-<option value="phone" <?php selected(get_option('wpotp_method'), 'phone'); ?>>Phone OTP (SMS)</option>
+    <option value="email" <?php selected(get_option('wpotp_method'), 'email'); ?>>Email Only</option>
+    <option value="phone" <?php selected(get_option('wpotp_method'), 'phone'); ?>>Phone Only</option>
+    <option value="both" <?php selected(get_option('wpotp_method'), 'both'); ?>>Both (User Choice)</option>
 </select>
 
 <h3>SMS API (Optional)</h3>
