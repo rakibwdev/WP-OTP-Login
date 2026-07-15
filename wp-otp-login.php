@@ -1,9 +1,10 @@
 <?php
 /*
 Plugin Name: WP OTP Login
-Description: Login with phone number using OTP (SMS API + Firebase support)
+Description: Login with Email OTP (default) and Phone OTP (SMS API).
 Version: 1.0
 Author: Rakib Dev Studio
+License: GPL2+
 */
 
 if (!defined('ABSPATH')) exit;
@@ -11,7 +12,6 @@ if (!defined('ABSPATH')) exit;
 define('WPOTP_PATH', plugin_dir_path(__FILE__));
 define('WPOTP_URL', plugin_dir_url(__FILE__));
 
-// Includes
 require_once WPOTP_PATH . 'includes/form.php';
 require_once WPOTP_PATH . 'includes/ajax.php';
 
@@ -22,32 +22,20 @@ add_action('wp_enqueue_scripts', function () {
 
     wp_enqueue_script('wpotp-script', WPOTP_URL . 'assets/script.js', ['jquery'], null, true);
 
-    // Firebase SDK
-    wp_enqueue_script('firebase-app', 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js', [], null, true);
-    wp_enqueue_script('firebase-auth', 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js', [], null, true);
-
     wp_localize_script('wpotp-script', 'wpotp_data', [
-        // 'ajax_url' => admin_url('admin-ajax.php'),
-        // 'provider' => get_option('wpotp_provider'),
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('wpotp_nonce'),
-        'provider' => get_option('wpotp_provider'),
-
-        'firebase' => [
-            'apiKey' => get_option('wpotp_firebase_apiKey'),
-            'authDomain' => get_option('wpotp_firebase_authDomain'),
-            'projectId' => get_option('wpotp_firebase_projectId'),
-            'appId' => get_option('wpotp_firebase_appId'),
-        ]
+        'method' => get_option('wpotp_method', 'email'),
+        'btn_color' => get_option('wpotp_btn_color', '#0073aa')
     ]);
 });
 
-
-// ADMIN SETTINGS
+// Admin Menu
 add_action('admin_menu', function(){
     add_options_page('WP OTP Login', 'WP OTP Login', 'manage_options', 'wpotp-settings', 'wpotp_settings_page');
 });
 
+// Settings Page
 function wpotp_settings_page() {
 ?>
 <div class="wrap">
@@ -56,21 +44,18 @@ function wpotp_settings_page() {
 <form method="post" action="options.php">
 <?php settings_fields('wpotp_group'); ?>
 
-<h3>OTP Provider</h3>
-<select name="wpotp_provider">
-    <option value="firebase" <?php selected(get_option('wpotp_provider'), 'firebase'); ?>>Firebase</option>
-    <option value="sms" <?php selected(get_option('wpotp_provider'), 'sms'); ?>>SMS API</option>
+<h3>Login Method</h3>
+<select name="wpotp_method">
+<option value="email" <?php selected(get_option('wpotp_method'), 'email'); ?>>Email OTP (Default)</option>
+<option value="phone" <?php selected(get_option('wpotp_method'), 'phone'); ?>>Phone OTP (SMS)</option>
 </select>
 
-<h3>SMS API</h3>
+<h3>SMS API (Optional)</h3>
 <input type="text" name="wpotp_sms_url" placeholder="API URL" value="<?php echo esc_attr(get_option('wpotp_sms_url')); ?>"><br><br>
-<input type="text" name="wpotp_sms_key" placeholder="API KEY" value="<?php echo get_option('wpotp_sms_key'); ?>"><br><br>
+<input type="text" name="wpotp_sms_key" placeholder="API KEY" value="<?php echo esc_attr(get_option('wpotp_sms_key')); ?>"><br><br>
 
-<h3>Firebase Config</h3>
-<input type="text" name="wpotp_firebase_apiKey" placeholder="API Key" value="<?php echo get_option('wpotp_firebase_apiKey'); ?>"><br><br>
-<input type="text" name="wpotp_firebase_authDomain" placeholder="Auth Domain" value="<?php echo get_option('wpotp_firebase_authDomain'); ?>"><br><br>
-<input type="text" name="wpotp_firebase_projectId" placeholder="Project ID" value="<?php echo get_option('wpotp_firebase_projectId'); ?>"><br><br>
-<input type="text" name="wpotp_firebase_appId" placeholder="App ID" value="<?php echo get_option('wpotp_firebase_appId'); ?>"><br><br>
+<h3>Button Color</h3>
+<input type="color" name="wpotp_btn_color" value="<?php echo esc_attr(get_option('wpotp_btn_color', '#0073aa')); ?>">
 
 <?php submit_button(); ?>
 </form>
@@ -78,13 +63,14 @@ function wpotp_settings_page() {
 <?php
 }
 
+// Register settings
 add_action('admin_init', function(){
-    register_setting('wpotp_group', 'wpotp_provider');
-    register_setting('wpotp_group', 'wpotp_sms_url');
-    register_setting('wpotp_group', 'wpotp_sms_key');
 
-    register_setting('wpotp_group', 'wpotp_firebase_apiKey');
-    register_setting('wpotp_group', 'wpotp_firebase_authDomain');
-    register_setting('wpotp_group', 'wpotp_firebase_projectId');
-    register_setting('wpotp_group', 'wpotp_firebase_appId');
+    register_setting('wpotp_group', 'wpotp_method', ['sanitize_callback'=>'sanitize_text_field']);
+    register_setting('wpotp_group', 'wpotp_sms_url', ['sanitize_callback'=>'esc_url_raw']);
+    register_setting('wpotp_group', 'wpotp_sms_key', ['sanitize_callback'=>'sanitize_text_field']);
+    register_setting('wpotp_group', 'wpotp_btn_color', [
+    'sanitize_callback' => 'sanitize_hex_color'
+]);
+
 });

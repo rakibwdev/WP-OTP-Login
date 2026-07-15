@@ -1,19 +1,40 @@
 .wpotp-box {
-    max-width: 300px;
-    margin: auto;
+    max-width: 350px;
+    margin: 20px auto;
+    padding: 25px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
     text-align: center;
+    font-family: Arial, sans-serif;
 }
 
+.wpotp-box select,
 .wpotp-box input {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 14px;
 }
 
-.wpotp-box button {
+.wpotp-btn {
     width: 100%;
-    padding: 10px;
-    background: #0073aa;
-    color: white;
+    padding: 12px;
     border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    color: #fff;
+    transition: 0.3s;
+}
+
+.wpotp-btn:hover {
+    opacity: 0.9;
+}
+
+#wpotp-msg {
+    margin-top: 10px;
+    font-size: 14px;
 }

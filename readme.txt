@@ -1,32 +1,25 @@
 === WP OTP Login ===
-Contributors: yourname
-Tags: otp login, mobile login, firebase otp, sms login
+Contributors: rakibdevstudio
+Tags: otp login, email login, phone login
 Requires at least: 5.0
 Tested up to: 6.5
 Stable tag: 1.0
-License: GPLv2 or later
+License: GPLv2
 
 == Description ==
-WP OTP Login allows users to login using mobile number via OTP.
-Supports Firebase (free) and custom SMS APIs.
-
-== Features ==
-- Firebase OTP login
-- SMS API OTP login
-- Rate limiting protection
-- Secure AJAX with nonce
-- Automatic user creation
+Login with Email OTP (free) or Phone OTP (SMS API).
 
 == Installation ==
 1. Upload plugin
 2. Activate
 3. Go to Settings → WP OTP Login
-4. Configure provider
-5. Use shortcode [wp_otp_login]
+4. Use shortcode [wp_otp_login]
 
-== FAQ ==
-= Is Firebase required? =
-No, you can use SMS API.
+== Features ==
+- Email OTP (Free)
+- Phone OTP (SMS)
+- Auto user registration
+- Secure AJAX
 
 == Changelog ==
 = 1.0 =

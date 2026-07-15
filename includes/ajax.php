@@ -1,109 +1,87 @@
 <?php
+if (!defined('ABSPATH')) exit;
 
-// RATE LIMIT FUNCTION
-function wpotp_rate_limit($phone) {
-    $key = 'wpotp_limit_' . md5($phone);
-    $count = get_transient($key);
+// Send OTP
+add_action('wp_ajax_nopriv_wpotp_send', 'wpotp_send');
+add_action('wp_ajax_wpotp_send', 'wpotp_send');
 
-    if ($count && $count >= 5) {
-        return false;
-    }
-
-    set_transient($key, ($count ? $count + 1 : 1), 300);
-    return true;
-}
-
-
-// SEND OTP (SMS)
-add_action('wp_ajax_send_otp_sms', 'wpotp_send_otp_sms');
-add_action('wp_ajax_nopriv_send_otp_sms', 'wpotp_send_otp_sms');
-
-function wpotp_send_otp_sms() {
+function wpotp_send(){
 
     check_ajax_referer('wpotp_nonce', 'nonce');
 
-    $phone = sanitize_text_field($_POST['phone']);
-
-    if (!wpotp_rate_limit($phone)) {
-        wp_send_json_error(['message' => 'Too many requests']);
-    }
+    $input = sanitize_text_field($_POST['input']);
+    $type  = sanitize_text_field($_POST['type']);
 
     $otp = wp_rand(100000, 999999);
-    set_transient('otp_' . $phone, $otp, 300);
+    set_transient('wpotp_' . md5($input), $otp, 300);
 
-    wp_remote_post(esc_url_raw(get_option('wpotp_sms_url')), [
-        'body' => [
-            'api_key' => sanitize_text_field(get_option('wpotp_sms_key')),
-            'to' => $phone,
-            'message' => "OTP: $otp"
-        ]
-    ]);
-
-    wp_send_json_success(['message' => 'OTP sent']);
-}
-
-
-// VERIFY OTP
-add_action('wp_ajax_verify_otp_sms', 'wpotp_verify_otp_sms');
-add_action('wp_ajax_nopriv_verify_otp_sms', 'wpotp_verify_otp_sms');
-
-function wpotp_verify_otp_sms() {
-
-    check_ajax_referer('wpotp_nonce', 'nonce');
-
-    $phone = sanitize_text_field($_POST['phone']);
-    $otp   = sanitize_text_field($_POST['otp']);
-
-    if (get_transient('otp_' . $phone) == $otp) {
-
-        wpotp_login_user($phone);
-        delete_transient('otp_' . $phone);
-
-        wp_send_json_success();
+    if($type === 'email'){
+        wp_mail($input, 'Your OTP Code', 'Your OTP is: ' . $otp);
     }
 
-    wp_send_json_error(['message' => 'Invalid OTP']);
-}
-
-
-// FIREBASE LOGIN
-add_action('wp_ajax_nopriv_firebase_login', 'wpotp_firebase_login');
-
-function wpotp_firebase_login() {
-
-    check_ajax_referer('wpotp_nonce', 'nonce');
-
-    $phone = sanitize_text_field($_POST['phone']);
-    wpotp_login_user($phone);
+    if($type === 'phone'){
+        wp_remote_post(get_option('wpotp_sms_url'), [
+            'body' => [
+                'api_key' => get_option('wpotp_sms_key'),
+                'to' => $input,
+                'message' => "OTP: $otp"
+            ]
+        ]);
+    }
 
     wp_send_json_success();
 }
 
+// Verify OTP
+add_action('wp_ajax_nopriv_wpotp_verify', 'wpotp_verify');
+add_action('wp_ajax_wpotp_verify', 'wpotp_verify');
 
-// COMMON LOGIN FUNCTION
-function wpotp_login_user($phone) {
+function wpotp_verify(){
 
-    $users = get_users([
-        'meta_key' => 'phone',
-        'meta_value' => $phone,
-        'number' => 1
-    ]);
+    check_ajax_referer('wpotp_nonce', 'nonce');
 
-    if (!empty($users)) {
-        $user_id = $users[0]->ID;
-    } else {
-        $username = 'user_' . preg_replace('/[^0-9]/', '', $phone);
+    $input = sanitize_text_field($_POST['input']);
+    $otp   = sanitize_text_field($_POST['otp']);
 
-        if (username_exists($username)) {
-            $username .= wp_rand(100,999);
+    $saved = get_transient('wpotp_' . md5($input));
+
+    if($saved == $otp){
+
+        wpotp_login($input);
+        delete_transient('wpotp_' . md5($input));
+
+        wp_send_json_success();
+    }
+
+    wp_send_json_error();
+}
+
+// Login / Register
+function wpotp_login($input){
+
+    if(is_email($input)){
+        $user = get_user_by('email', $input);
+
+        if(!$user){
+            $id = wp_create_user($input, wp_generate_password(), $input);
+        } else {
+            $id = $user->ID;
         }
+    } else {
+        $users = get_users([
+            'meta_key'=>'phone',
+            'meta_value'=>$input,
+            'number'=>1
+        ]);
 
-        $user_id = wp_create_user($username, wp_generate_password(), $username.'@otp.local');
-
-        if (!is_wp_error($user_id)) {
-            update_user_meta($user_id, 'phone', $phone);
+        if($users){
+            $id = $users[0]->ID;
+        } else {
+            $username = 'user_' . wp_rand(1000,9999);
+            $id = wp_create_user($username, wp_generate_password(), $username.'@otp.local');
+            update_user_meta($id, 'phone', $input);
         }
     }
 
-    wp_set_auth_cookie($user_id);
+    wp_set_auth_cookie($id);
 }
