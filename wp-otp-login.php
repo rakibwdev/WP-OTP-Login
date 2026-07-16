@@ -72,8 +72,8 @@ function wpotp_settings_page() {
 </select>
 
 <h3>SMS API</h3>
-<input type="text" name="wpotp_sms_url" value="<?php echo esc_attr(get_option('wpotp_sms_url')); ?>"><br><br>
-<input type="text" name="wpotp_sms_key" value="<?php echo esc_attr(get_option('wpotp_sms_key')); ?>"><br><br>
+<input type="text" name="wpotp_sms_url" placeholder="SMS API URL" value="<?php echo esc_attr(get_option('wpotp_sms_url')); ?>"><br><br>
+<input type="text" name="wpotp_sms_key" placeholder="SMS API Key" value="<?php echo esc_attr(get_option('wpotp_sms_key')); ?>"><br><br>
 
 <h3>Button Color</h3>
 <input type="color" name="wpotp_btn_color" value="<?php echo esc_attr(get_option('wpotp_btn_color', '#0073aa')); ?>">

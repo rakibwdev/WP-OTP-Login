@@ -22,6 +22,9 @@
     outline: none;
     transition: 0.25s ease;
 }
+.wpotp-box input {
+    width: 93% !important;
+}
 
 /* Focus effect */
 .wpotp-box input:focus,
