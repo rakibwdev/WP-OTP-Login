@@ -1,11 +1,10 @@
 <?php
 /*
 Plugin Name: WP OTP Login
-Plugin URI: https://yourwebsite.com/wp-otp-login
 Description: Secure login system using One-Time Password (OTP) via Email or Phone (SMS). Allows users to authenticate without passwords.
 Version: 1.0.0
 Author: Rakib Dev Studio
-Author URI: https://yourwebsite.com
+Author URI: https://rakibwdev.netlify.app
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: wpotp
